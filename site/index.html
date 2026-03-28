@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Controle Remoto</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at top, #2c3e50 0%, #0a0a0a 100%);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px 15px;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    .controle {
+      background: linear-gradient(180deg, #2b2b2b 0%, #151515 100%);
+      border-radius: 40px;
+      padding: 25px 20px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 
+        0 30px 60px rgba(0, 0, 0, 0.9),
+        inset 0 2px 10px rgba(255, 255, 255, 0.1),
+        inset 0 -2px 10px rgba(0, 0, 0, 0.8),
+        0 0 0 2px #333;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .header-botoes {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 10px;
+    }
+
+    .botao-energia {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #e74c3c, #c0392b);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 
+        3px 3px 8px rgba(0,0,0,0.5),
+        -2px -2px 6px rgba(255,255,255,0.1),
+        inset 0 0 0 rgba(0,0,0,0);
+      transition: all 0.2s ease;
+      color: white;
+    }
+
+    .botao-energia:active {
+      box-shadow: 
+        0 0 0 rgba(0,0,0,0.5),
+        0 0 0 rgba(255,255,255,0.1),
+        inset 3px 3px 8px rgba(0,0,0,0.6);
+      transform: translateY(2px);
+    }
+
+    .botao-energia svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .botao-pequeno {
+      padding: 8px 12px;
+      border-radius: 20px;
+      background: linear-gradient(145deg, #f39c12, #d68910);
+      border: none;
+      color: white;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+      transition: all 0.2s ease;
+    }
+
+    .botao-pequeno:active {
+      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
+      transform: translateY(2px);
+    }
+
+    .titulo {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #ccc;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      margin-top: -5px;
+    }
+
+    .secao-titulo {
+      color: #777;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      text-align: center;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .secao-titulo::before,
+    .secao-titulo::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #333;
+      margin: 0 10px;
+    }
+
+    .input-group {
+      display: flex;
+      background: #1a1a1a;
+      padding: 5px;
+      border-radius: 25px;
+      box-shadow: inset 0 3px 6px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    #texto {
+      flex: 1;
+      padding: 10px 15px;
+      border: none;
+      background: transparent;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+      min-width: 0;
+    }
+
+    #texto::placeholder { color: #666; }
+
+    .btn-enviar {
+      padding: 0 18px;
+      background: linear-gradient(145deg, #3498db, #2980b9);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 13px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+      transition: all 0.2s;
+    }
+
+    .btn-enviar:active {
+      transform: translateY(2px);
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);
+    }
+
+    /* Grid Options */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .acao-btn {
+      padding: 10px 5px;
+      border-radius: 12px;
+      background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+      border: none;
+      color: #ccc;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.4), inset 1px 1px 2px rgba(255,255,255,0.05);
+      transition: all 0.2s;
+    }
+
+    .acao-btn:active {
+      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.6);
+      transform: translateY(2px);
+      color: white;
+      background: #2a2a2a;
+    }
+
+    .media-btn {
+      padding: 12px 5px;
+      border-radius: 12px;
+      border: none;
+      font-weight: bold;
+      font-size: 12px;
+      color: white;
+      cursor: pointer;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+      transition: all 0.2s;
+    }
+
+    .media-btn.netflix { background: linear-gradient(145deg, #e50914, #b20710); }
+    .media-btn.hbo { background: linear-gradient(145deg, #5c068c, #3f0460); }
+    .media-btn.yt { background: linear-gradient(145deg, #ff0000, #cc0000); }
+
+    .media-btn:active {
+      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.6);
+      transform: translateY(2px);
+    }
+
+    /* D-PAD Nav */
+    .d-pad-container {
+      display: flex;
+      justify-content: center;
+      margin: 5px 0;
+    }
+
+    .d-pad {
+      position: relative;
+      width: 170px;
+      height: 170px;
+      background: #111;
+      border-radius: 50%;
+      box-shadow: 
+        0 10px 25px rgba(0,0,0,0.7),
+        inset 0 2px 5px rgba(255,255,255,0.05);
+      border: 1px solid #222;
+    }
+
+    .dir-btn {
+      position: absolute;
+      background: linear-gradient(145deg, #333, #222);
+      border: none;
+      color: #aaa;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 
+        2px 2px 5px rgba(0,0,0,0.4),
+        inset 1px 1px 2px rgba(255,255,255,0.05);
+      transition: all 0.15s;
+    }
+
+    .dir-btn:active {
+      box-shadow: inset 3px 3px 8px rgba(0,0,0,0.7);
+      color: #fff;
+      background: #222;
+    }
+
+    .dir-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .dir-btn.up {
+      top: 10px; left: 55px;
+      width: 60px; height: 50px;
+      border-radius: 30px 30px 10px 10px;
+    }
+    .dir-btn.down {
+      bottom: 10px; left: 55px;
+      width: 60px; height: 50px;
+      border-radius: 10px 10px 30px 30px;
+    }
+    .dir-btn.left {
+      top: 55px; left: 10px;
+      width: 50px; height: 60px;
+      border-radius: 30px 10px 10px 30px;
+    }
+    .dir-btn.right {
+      top: 55px; right: 10px;
+      width: 50px; height: 60px;
+      border-radius: 10px 30px 30px 10px;
+    }
+    .dir-btn.center {
+      top: 60px; left: 60px;
+      width: 50px; height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #444, #333);
+      font-size: 13px;
+      font-weight: bold;
+      color: #fff;
+      border: 2px solid #2a2a2a;
+    }
+
+    /* Scroll Botoes */
+    .scroll-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      padding: 0 10px;
+    }
+
+    .scroll-btn {
+      flex: 1;
+      padding: 10px;
+      background: linear-gradient(145deg, #34495e, #2c3e50);
+      color: white;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 12px;
+      box-shadow: 
+        3px 3px 6px rgba(0,0,0,0.4),
+        inset 1px 1px 2px rgba(255,255,255,0.1);
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .scroll-btn:active {
+      box-shadow: inset 2px 2px 6px rgba(0,0,0,0.5);
+      transform: translateY(2px);
+    }
+    
+    .scroll-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Trackpad */
+    .trackpad-container {
+      background: #1a1a1a;
+      padding: 12px;
+      border-radius: 20px;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #mouse-area {
+      width: 100%;
+      height: 140px;
+      background: linear-gradient(145deg, #222, #181818);
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #333;
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      touch-action: none;
+      box-shadow: inset 0 5px 10px rgba(0,0,0,0.8);
+      border: 1px solid #2a2a2a;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #mouse-area::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.02) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .mouse-botoes {
+      display: flex;
+      gap: 8px;
+    }
+
+    .mouse-btn {
+      flex: 1;
+      padding: 12px;
+      background: linear-gradient(145deg, #333, #252525);
+      color: #999;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 
+        2px 2px 5px rgba(0,0,0,0.5),
+        inset 1px 1px 2px rgba(255,255,255,0.05);
+      transition: all 0.2s;
+    }
+
+    .mouse-btn:active {
+      box-shadow: inset 3px 3px 8px rgba(0,0,0,0.6);
+      color: #fff;
+      transform: translateY(2px);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="controle">
+    
+    <!-- Top Functions -->
+    <div class="header-botoes">
+      <button class="botao-energia" onclick="fechar_janela()" aria-label="Desligar APP" title="Desligar/Alt+F4">
+        <svg viewBox="0 0 24 24">
+          <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+          <line x1="12" y1="2" x2="12" y2="12"></line>
+        </svg>
+      </button>
+      <div class="titulo">CONTROL</div>
+      <button class="botao-pequeno" onclick="fechar_pagina()" title="Fechar Guia (Ctrl+F4)">FECHAR</button>
+    </div>
+
+    <!-- Apps de Mídia -->
+    <div>
+      <div class="secao-titulo">Aplicativos</div>
+      <div class="grid-3">
+        <button class="media-btn netflix" onclick="Netflix()">Netflix</button>
+        <button class="media-btn hbo" onclick="Hbo()">HBO Max</button>
+        <button class="media-btn yt" onclick="Youtube()">YouTube</button>
+      </div>
+    </div>
+
+    <!-- Controle do Sistema -->
+    <div>
+      <div class="secao-titulo">Sistema</div>
+      <div class="grid-3">
+        <button class="acao-btn" onclick="bloquear()">Bloquear PC</button>
+        <button class="acao-btn" onclick="janela()">Alt+Tab</button>
+        <button class="acao-btn" onclick="atualizar()">F5 Atualizar</button>
+      </div>
+    </div>
+
+    <!-- Keyboard Input -->
+    <div>
+      <div class="secao-titulo">Teclado</div>
+      <div class="input-group">
+        <input id="texto" type="text" placeholder="Digite aqui...">
+        <button class="btn-enviar" onclick="enviar()">Enviar</button>
+      </div>
+    </div>
+
+    <!-- Text Operations -->
+    <div>
+      <div class="grid-3">
+        <button class="acao-btn" onclick="enter()">Enter</button>
+        <button class="acao-btn" onclick="backspace()">Apagar</button>
+        <button class="acao-btn" onclick="limpar()">Limpar Tudo</button>
+        <button class="acao-btn" onclick="desfazer()">Desfazer</button>
+        <button class="acao-btn" onclick="refazer()">Refazer</button>
+        <button class="acao-btn" onclick="linha()">Tab</button>
+      </div>
+    </div>
+
+    <!-- Navigation / D-PAD -->
+    <div>
+      <div class="secao-titulo">Navegação</div>
+      <div class="d-pad-container">
+        <div class="d-pad">
+          <button class="dir-btn up" onclick="seta('up')">
+            <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h16z"/></svg>
+          </button>
+          <button class="dir-btn left" onclick="seta('left')">
+            <svg viewBox="0 0 24 24"><path d="M4 12l8-8v16z"/></svg>
+          </button>
+          <button class="dir-btn center" onclick="enter()">OK</button>
+          <button class="dir-btn right" onclick="seta('right')">
+            <svg viewBox="0 0 24 24"><path d="M20 12l-8-8v16z"/></svg>
+          </button>
+          <button class="dir-btn down" onclick="seta('down')">
+            <svg viewBox="0 0 24 24"><path d="M12 20l-8-8h16z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- Volume -->
+    <div>
+      <div class="secao-titulo">Volume</div>
+      <div class="scroll-group">
+        <button class="scroll-btn" 
+                onmousedown="volumeUp()" onmouseup="soltarVolume()" onmouseleave="soltarVolume()" 
+                ontouchstart="volumeUp()" ontouchend="soltarVolume()" oncontextmenu="return false;">
+          <svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+          Volume +
+        </button>
+        <button class="scroll-btn" 
+                onmousedown="volumeDown()" onmouseup="soltarVolume()" onmouseleave="soltarVolume()" 
+                ontouchstart="volumeDown()" ontouchend="soltarVolume()" oncontextmenu="return false;">
+          <svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+          Volume -
+        </button>
+      </div>
+    </div>
+
+    <!-- Números -->
+    <div>
+      <div class="secao-titulo">Números</div>
+      <div class="grid-3">
+        <button class="acao-btn" onclick="num(1)">1</button>
+        <button class="acao-btn" onclick="num(2)">2</button>
+        <button class="acao-btn" onclick="num(3)">3</button>
+        <button class="acao-btn" onclick="num(4)">4</button>
+        <button class="acao-btn" onclick="num(5)">5</button>
+        <button class="acao-btn" onclick="num(6)">6</button>
+        <button class="acao-btn" onclick="num(7)">7</button>
+        <button class="acao-btn" onclick="num(8)">8</button>
+        <button class="acao-btn" onclick="num(9)">9</button>
+        <button class="acao-btn" onclick="num(0)" style="grid-column: span 3;">0</button>
+      </div>
+    </div>
+    <!-- Scroll -->
+    <div>
+      <div class="scroll-group">
+        <button class="scroll-btn" onclick="scrollUp()">
+          <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"></polyline></svg>
+          Role Acima
+        </button>
+        <button class="scroll-btn" onclick="scrollDown()">
+          <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          Role Abaixo
+        </button>
+      </div>
+    </div>
+
+    <!-- Mouse / Trackpad -->
+    <div class="trackpad-container">
+      <div class="secao-titulo" style="margin-bottom: 2px; color:#555;">Trackpad</div>
+      <div id="mouse-area">
+        Arraste
+      </div>
+      <div class="mouse-botoes">
+        <button class="mouse-btn" onclick="clique()">Esq</button>
+        <button class="mouse-btn" onclick="cliqueDireito()">Dir</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
