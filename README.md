@@ -23,6 +23,21 @@ Frontend: HTML, CSS e JavaScript (pode ser adaptado para Vue.js)
 
 # Como usar:
 
+
+Certifique-se de ter o **[Node.js](https://nodejs.org/)** instalado na sua máquina.
+
+1. Clone este repositório para o seu computador:
+bash
+git clone https://github.com/seu-usuario/seu-repositorio.git
+
+Entre na pasta do projeto
+
+cd\ seu-repositorio
+
+E instale as suas depedências 
+
+````npm install````
+
 Rodar o servidor Node.js no computador (node server.js). Entre no seu vscode ou no cmd, powershell e abra a pasta onde está o seu arquivo, depois digite o node server.js.
 Acessar o endereço IP do computador no celular pelo navegador (http://<IP>:3000).
 Usar a interface para digitar, clicar, mover o mouse ou executar ações do sistema.
