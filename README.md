@@ -39,7 +39,7 @@ E instale as suas depedências
 ````npm install````
 
 Rodar o servidor Node.js no computador (node server.js). Entre no seu vscode ou no cmd, powershell e abra a pasta onde está o seu arquivo, depois digite o node server.js.
-Acessar o endereço IP do computador no celular pelo navegador (http://<IP>:3000).
+Acessar o endereço IP do computador no celular pelo navegador (http://IP_DO_SEU_NOTBOOK:3000).
 Usar a interface para digitar, clicar, mover o mouse ou executar ações do sistema.
 
 # Objetivo do projeto:
