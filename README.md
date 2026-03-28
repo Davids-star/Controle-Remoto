@@ -27,11 +27,11 @@ Rodar o servidor Node.js no computador (node server.js). Entre no seu vscode ou 
 Acessar o endereço IP do computador no celular pelo navegador (http://<IP>:3000).
 Usar a interface para digitar, clicar, mover o mouse ou executar ações do sistema.
 
-#Objetivo do projeto:
+# Objetivo do projeto:
 
 Criar um sistema personalizado e seguro, sem depender de aplicativos externos que tenha anuncios, para controlar o computador remotamente com total liberdade.
 
-#Observação:
+# Observação:
 
 Existe duas travas de segurança envolvendo o DOM
 1 Trava; É uma sennha que você modifica ela no server.js 
