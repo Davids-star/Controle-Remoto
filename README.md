@@ -54,3 +54,5 @@ Existe duas travas de segurança envolvendo o DOM
 modifique ele nessa parte, colocando o próprio ip do seu celular:
 (!ip.startsWith("192.168.18.48"))
 
+
+A senha para acessar esse site é 3598
