@@ -417,7 +417,7 @@
     
     <!-- Top Functions -->
     <div class="header-botoes">
-      <button class="botao-energia" onclick="fechar_janela()" aria-label="Desligar APP" title="Desligar/Alt+F4">
+      <button class="botao-energia" onclick="desligar_pc()" aria-label="Desligar APP" title="Desligarpc">
         <svg viewBox="0 0 24 24">
           <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
           <line x1="12" y1="2" x2="12" y2="12"></line>
@@ -425,6 +425,7 @@
       </button>
       <div class="titulo">CONTROL</div>
       <button class="botao-pequeno" onclick="fechar_pagina()" title="Fechar Guia (Ctrl+F4)">FECHAR</button>
+      <button class="botao-pequeno" onclick="cancelar_desligar()" title="Cancelar Desligar">Cancelar</button>
     </div>
 
     <!-- Apps de Mídia -->
@@ -444,6 +445,7 @@
         <button class="acao-btn" onclick="bloquear()">Bloquear PC</button>
         <button class="acao-btn" onclick="janela()">Alt+Tab</button>
         <button class="acao-btn" onclick="atualizar()">F5 Atualizar</button>
+        <button class="acao-btn" onclick="tela_cheia()">Tela Cheia</button>
       </div>
     </div>
 
@@ -541,8 +543,8 @@
     <!-- Mouse / Trackpad -->
     <div class="trackpad-container">
       <div class="secao-titulo" style="margin-bottom: 2px; color:#555;">Trackpad</div>
-      <div id="mouse-area">
-        Arraste
+      <div id="mouse-area" title="Arraste para mover, Clique 2x para Enter">
+        Arraste ou Clique 2x [Enter]
       </div>
       <div class="mouse-botoes">
         <button class="mouse-btn" onclick="clique()">Esq</button>
