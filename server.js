@@ -16,7 +16,7 @@ app.use(express.json())
 function ipFilter(req, res, next) {
     const ip = req.ip ? req.ip.replace("::ffff:", "") : "";
 
-    if (!ip.startsWith("192.168.18.48") && ip !== "127.0.0.1" && ip !== "::1") {
+    if (!ip.startsWith("ip_do_seu_celular") && ip !== "127.0.0.1" && ip !== "::1") {
         console.log("🚫 IP ACESSO NEGADO:", ip);
         return res.status(403).send("Acesso totalmente bloqueado para este IP.");
     }
