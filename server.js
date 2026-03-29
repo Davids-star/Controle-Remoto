@@ -28,10 +28,16 @@ app.use(express.static('site'))
 
 // Middleware de proteção por Token (Protege tudo que vier depois)
 app.use((req, res, next) => {
-    const token = req.headers['x-token'];
+    // 🔥 Permite OPTIONS sem validar token (Necessário para CORS)
+    if (req.method === 'OPTIONS') {
+        return next();
+    }
 
-    if (token !== '3598') {
-        console.log("⛔ API NEGADA. Token inválido! Recebido:", token);
+    const token = req.headers['x-token'];
+    const validToken = (process.env.AUTH_TOKEN || "").trim();
+
+    if (token !== validToken) {
+        console.log(`⛔ API NEGADA. Token inválido! Recebido: [${token}] | Esperado: [${validToken}]`);
         return res.status(403).json({ erro: 'Acesso negado: Token inválido' });
     }
 
@@ -214,22 +220,26 @@ app.post('/fechar_tudo', async (req, res) => {
 
 
 // NAvegador
+const CHROME_PROFILE = process.env.CHROME_PROFILE || "Default";
 
 //Abrir chrome com o cmd
 app.post('/abrir-site', (req, res) => {
-    exec('start chrome --profile-directory="Default" https://www.netflix.com/browse')
+    const url = process.env.URL_NETFLIX || "https://www.netflix.com/browse";
+    exec(`start chrome --profile-directory="${CHROME_PROFILE}" ${url}`)
     res.json({ ok: true })
-
 })
+
 //abrir o hbo com o cmd
 app.post('/abrir-hbo', (req, res) => {
-    exec('start chrome --profile-directory="Default"  https://play.hbomax.com/')
+    const url = process.env.URL_HBO || "https://play.hbomax.com/";
+    exec(`start chrome --profile-directory="${CHROME_PROFILE}" ${url}`)
     res.json({ ok: true })
 })
 
 //youtube
 app.post('/abrir-yt', (req, res) => {
-    exec('start chrome --profile-directory="Default" https://www.youtube.com/')
+    const url = process.env.URL_YOUTUBE || "https://www.youtube.com/";
+    exec(`start chrome --profile-directory="${CHROME_PROFILE}" ${url}`)
     res.json({ ok: true })
 })
 
@@ -335,6 +345,7 @@ app.post('/mouse-up', async (req, res) => {
 });
 
 
-app.listen(3000, '0.0.0.0', () => {
-    console.log('servidor rodando na port 3000')
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`servidor rodando na porta ${PORT}`)
 })
