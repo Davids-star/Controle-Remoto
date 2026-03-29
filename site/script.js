@@ -43,7 +43,7 @@ function enviar() {
     alert("Erro: " + err.message)
   })
 }
-
+//botãoo enter
 function enter() {
   console.log("Enviando Enter")
   api('/enter')
@@ -84,18 +84,28 @@ function linha(){
 function bloquear(){
   api('/Bloquear_pc')
 }
+
+function desligar_pc(){
+  api('/desligar_pc')
+
+}
+function cancelar_desligar(){
+  api('/cancelar_desligar')
+}
+
 function janela(){
   api('/trocar_janela')
 }
 
- //fehcar pagina ou abas
+ //fechar pagina ou abas
 function fechar_pagina(){
-  api('/fechar_janela')
+  api('/fechar_guia')
 }
 function fechar_janela(){
   api('/fechar_tudo')
 }
 
+// funções para abrir streaming
 
 function Netflix(){
   api('/abrir-site')
@@ -140,6 +150,15 @@ function atualizar(){
   .then(d => console.log("Página atualizada:", d))
   .catch(err => {
     console.error("Erro ao atualizar:", err)
+  })
+}
+// tela cheia
+function tela_cheia(){
+  api('/tela_cheia')
+  .then(r => r.json())
+  .then(d => console.log("Tela cheia:", d))
+  .catch(err => {
+    console.error("Erro ao tela cheia:", err)
   })
 }
 
@@ -192,41 +211,98 @@ function mouseMoverRelativo(dx,dy){
 }
 //clique do mause
 function clique(){
-  api('/mouse-clique')
+  api('/mouse-clique');
+  feedbackClique();
 }
 
 function cliqueDireito()
 { 
-  api('/mouse-clique-direito')
+  api('/mouse-clique-direito');
+  feedbackClique();
 }
 
-//ÁREA ONDE MOVE O MAUSE NO CELULAR, TRAVAR
+function mouseDown() {
+  api('/mouse-down')
+}
+
+function mouseUp() {
+  api('/mouse-up')
+}
+
+//ÁREA ONDE MOVE O MAUSE NO CELULAR
 const area = document.getElementById("mouse-area");
 let lastX, lastY;
-let dragging = false;
+let draggingMouse = false; // Se está movendo o cursor
+let isDoubleTapDragging = false; // Se está no modo de arrastar (segundo toque)
+let lastTapTime = 0;
+let movedSinceStart = false;
 
 area.addEventListener("touchstart", e => {
-  e.preventDefault(); // 🔥 trava scroll
-  dragging = true;
-  lastX = e.touches[0].clientX;
-  lastY = e.touches[0].clientY;
+    e.preventDefault();
+    const now = Date.now();
+    const timeSinceLastTap = now - lastTapTime;
+
+    draggingMouse = true;
+    movedSinceStart = false;
+    lastX = e.touches[0].clientX;
+    lastY = e.touches[0].clientY;
+
+    // Detecta o início do segundo toque para arraste
+    if (timeSinceLastTap < 400 && timeSinceLastTap > 50) {
+        isDoubleTapDragging = true;
+        mouseDown(); // Pressiona o botão do mouse no servidor
+        area.style.background = "rgba(255, 255, 255, 0.3)"; // Destaque para arraste
+    }
 }, { passive: false });
 
 area.addEventListener("touchmove", e => {
-  if (!dragging) return;
+    if (!draggingMouse) return;
+    e.preventDefault();
 
-  e.preventDefault(); // 🔥 ESSENCIAL
+    const dx = e.touches[0].clientX - lastX;
+    const dy = e.touches[0].clientY - lastY;
 
-  const dx = e.touches[0].clientX - lastX;
-  const dy = e.touches[0].clientY - lastY;
+    // Se moveu mais que 3px, consideramos movimento
+    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+        movedSinceStart = true;
+    }
 
-  lastX = e.touches[0].clientX;
-  lastY = e.touches[0].clientY;
+    lastX = e.touches[0].clientX;
+    lastY = e.touches[0].clientY;
 
-  mouseMoverRelativo(dx * 2, dy * 2);
+    // Movimentação do mouse
+    mouseMoverRelativo(dx * 1.5, dy * 1.5); 
 }, { passive: false });
 
 area.addEventListener("touchend", e => {
-  e.preventDefault();
-  dragging = false;
-});
+    e.preventDefault();
+    draggingMouse = false;
+    const now = Date.now();
+
+    if (isDoubleTapDragging) {
+        // Final de um arraste (double tap hold release)
+        mouseUp(); // Solta o botão do mouse
+        isDoubleTapDragging = false;
+        lastTapTime = 0;
+        area.style.background = ""; // Remove destaque
+    } else {
+        // Se não moveu, é um toque (clique)
+        if (!movedSinceStart) {
+            clique(); // Clique esquerdo simples
+            lastTapTime = now;
+        } else {
+            // Se moveu e soltou, não é um double tap dragging
+            lastTapTime = 0;
+        }
+    }
+    movedSinceStart = false;
+}, { passive: false });
+
+// Feedback visual na área de mouse
+function feedbackClique() {
+    const originalBg = area.style.background;
+    area.style.background = "rgba(255, 255, 255, 0.2)";
+    setTimeout(() => {
+        area.style.background = originalBg;
+    }, 100);
+}
