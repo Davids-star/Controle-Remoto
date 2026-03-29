@@ -105,7 +105,6 @@ function fechar_janela(){
   api('/fechar_tudo')
 }
 
-// funções para abrir streaming
 
 function Netflix(){
   api('/abrir-site')
