@@ -297,6 +297,35 @@ area.addEventListener("touchend", e => {
     movedSinceStart = false;
 }, { passive: false });
 
+// Monitor de Segurança
+function verificarSeguranca() {
+  const badge = document.getElementById("status-seguranca");
+  
+  api('/seguranca-status', 'GET')
+  .then(res => res.json())
+  .then(data => {
+    badge.className = "security-status";
+    if (data.total_score >= 100) {
+      badge.classList.add("ok");
+      badge.innerHTML = `<span class="status-dot"></span> Protegido`;
+    } else if (data.total_score >= 50) {
+      badge.classList.add("warn");
+      badge.innerHTML = `<span class="status-dot"></span> Vulnerável (Melhore o Token)`;
+    } else {
+      badge.classList.add("danger");
+      badge.innerHTML = `<span class="status-dot"></span> Crítico!`;
+    }
+    console.log("Status de Segurança:", data);
+  })
+  .catch(err => {
+    badge.classList.add("danger");
+    badge.innerHTML = `<span class="status-dot"></span> Offline`;
+  });
+}
+
+// Verifica ao carregar
+verificarSeguranca();
+
 // Feedback visual na área de mouse
 function feedbackClique() {
     const originalBg = area.style.background;
