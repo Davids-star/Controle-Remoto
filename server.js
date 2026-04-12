@@ -1,5 +1,7 @@
+require('dotenv').config();
 const express = require('express')
 const cors = require('cors')
+const os = require('os')
 const { keyboard, Key, clipboard } = require("@nut-tree-fork/nut-js")
 const { mouse, Point, Button } = require("@nut-tree-fork/nut-js");
 const { exec } = require('child_process')
@@ -12,12 +14,47 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
+// Prevenção de Brute Force (Rate Limiting básico em memória)
+const tentativasErradas = new Map();
+function rateLimit(req, res, next) {
+    const ip = req.ip;
+    const agora = Date.now();
+    const info = tentativasErradas.get(ip) || { count: 0, blockUntil: 0 };
+
+    if (info.blockUntil > agora) {
+        return res.status(429).json({ erro: "Muitas tentativas. Bloqueado temporariamente." });
+    }
+    next();
+}
+app.use(rateLimit);
+
 // Filtro de IP ativado globalmente (Antes até do HTML carregar)
 function ipFilter(req, res, next) {
     const ip = req.ip ? req.ip.replace("::ffff:", "") : "";
+    const allowedPrefix = (process.env.ALLOWED_IP_PREFIX || "").trim();
 
-    if (!ip.startsWith("ip_do_seu_celular") && ip !== "127.0.0.1" && ip !== "::1") {
-        console.log("🚫 IP ACESSO NEGADO:", ip);
+    // Permitir localhost e IP da configuração
+    if (ip === "127.0.0.1" || ip === "::1") return next();
+    if (allowedPrefix && ip.startsWith(allowedPrefix)) return next();
+
+    // Permitir acesso dinâmico de aparelhos na mesma rede do notebook
+    const networkInterfaces = require('os').networkInterfaces();
+    let isLocalNetwork = false;
+
+    for (const name in networkInterfaces) {
+        for (const iface of networkInterfaces[name]) {
+            if (iface.family === 'IPv4' && !iface.internal) {
+                // Pega os 3 primeiros octetos (ex: 192.168.1)
+                const hostPrefix = iface.address.split('.').slice(0, 3).join('.');
+                if (ip.startsWith(hostPrefix)) {
+                    isLocalNetwork = true;
+                }
+            }
+        }
+    }
+
+    if (!isLocalNetwork) {
+        console.log(`🚫 IP ACESSO NEGADO: [${ip}] | Fora da rede local permitida.`);
         return res.status(403).send("Acesso totalmente bloqueado para este IP.");
     }
     next();
@@ -36,10 +73,30 @@ app.use((req, res, next) => {
     const token = req.headers['x-token'];
     const validToken = (process.env.AUTH_TOKEN || "").trim();
 
+    // Segurança extra: Se o token do .env estiver vazio por erro, bloqueia tudo
+    if (!validToken || validToken.length < 4) {
+        console.error("❌ ERRO CRÍTICO: AUTH_TOKEN não configurado ou muito curto!");
+        return res.status(500).json({ erro: 'Erro interno de configuração de segurança' });
+    }
+
     if (token !== validToken) {
-        console.log(`⛔ API NEGADA. Token inválido! Recebido: [${token}] | Esperado: [${validToken}]`);
+        const ip = req.ip;
+        const info = tentativasErradas.get(ip) || { count: 0, blockUntil: 0 };
+        info.count++;
+        
+        // Se errar 5 vezes, bloqueia por 5 minutos
+        if (info.count >= 5) {
+            info.blockUntil = Date.now() + (5 * 60 * 1000); 
+            console.log(`🚫 IP BLOQUEADO POR BRUTE FORCE: ${ip}`);
+        }
+        
+        tentativasErradas.set(ip, info);
+        console.log(`⛔ API NEGADA. Token inválido! Recebido: [${token}]`);
         return res.status(403).json({ erro: 'Acesso negado: Token inválido' });
     }
+
+    // Se acertar o token, reseta as tentativas
+    tentativasErradas.delete(req.ip);
 
     let ip = req.ip ? req.ip.replace("::ffff:", "") : "desconhecido";
     console.log("✅ Comando autorizado. IP conectado:", ip);
@@ -222,10 +279,17 @@ app.post('/fechar_tudo', async (req, res) => {
 // NAvegador
 const CHROME_PROFILE = process.env.CHROME_PROFILE || "Default";
 
+// Função para sanitizar entradas de shell
+function sanitize(str) {
+    return str.replace(/[;&|`$<>]/g, '');
+}
+
 //Abrir chrome com o cmd
 app.post('/abrir-site', (req, res) => {
     const url = process.env.URL_NETFLIX || "https://www.netflix.com/browse";
-    exec(`start chrome --profile-directory="${CHROME_PROFILE}" ${url}`)
+    const profile = sanitize(CHROME_PROFILE);
+    const safeUrl = sanitize(url);
+    exec(`start chrome --profile-directory="${profile}" ${safeUrl}`)
     res.json({ ok: true })
 })
 
@@ -239,7 +303,9 @@ app.post('/abrir-hbo', (req, res) => {
 //youtube
 app.post('/abrir-yt', (req, res) => {
     const url = process.env.URL_YOUTUBE || "https://www.youtube.com/";
-    exec(`start chrome --profile-directory="${CHROME_PROFILE}" ${url}`)
+    const profile = sanitize(CHROME_PROFILE);
+    const safeUrl = sanitize(url);
+    exec(`start chrome --profile-directory="${profile}" ${safeUrl}`)
     res.json({ ok: true })
 })
 
@@ -345,7 +411,46 @@ app.post('/mouse-up', async (req, res) => {
 });
 
 
+// Diagnóstico de Segurança (Para o usuário ver o próprio status)
+app.get('/seguranca-status', (req, res) => {
+    const token = (process.env.AUTH_TOKEN || "").trim();
+    const score = token.length >= 8 ? 100 : (token.length * 10);
+    const ipFiltro = !!(process.env.ALLOWED_IP_PREFIX);
+    
+    res.json({
+        protecao_token: token.length >= 6 ? "Forte" : "Fraca (adicione mais dígitos)",
+        filtro_ip_ativo: ipFiltro ? "Sim" : "Não (perigo!)",
+        total_score: score + (ipFiltro ? 30 : 0)
+    });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`servidor rodando na porta ${PORT}`)
+    console.log(`✅ Servidor rodando na porta ${PORT}`);
+    
+    const networkInterfaces = os.networkInterfaces();
+    console.log(`🌐 Descubra seu IP para acessar pelo celular:`);
+    
+    let firstIp = null;
+    
+    for (const interfaceName in networkInterfaces) {
+        const interfaces = networkInterfaces[interfaceName];
+        for (const interfaceInfo of interfaces) {
+            if (interfaceInfo.family === 'IPv4' && !interfaceInfo.internal) {
+                const link = `http://${interfaceInfo.address}:${PORT}`;
+                console.log(`   👉 ${link}`);
+                if (!firstIp) firstIp = link;
+            }
+        }
+    }
+
+    if (firstIp) {
+        try {
+            const qrcode = require('qrcode-terminal');
+            console.log(`\n📱 Escaneie o QR Code abaixo com a câmera do celular para acessar:\n`);
+            qrcode.generate(firstIp, { small: true });
+        } catch (e) {
+            console.log(`\n(Instale o pacote qrcode-terminal para ver o QR code na tela)`);
+        }
+    }
 })
