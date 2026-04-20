@@ -11,3 +11,8 @@ if not exist "node_modules\qrcode-terminal" (
 
 node server.js
 pause
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 3cba9cc2315352bd1b8224070eeda76e311c64d9

@@ -13,9 +13,13 @@
   "dependencies": {
     "@nut-tree-fork/nut-js": "^4.2.6",
     "cors": "^2.8.6",
+<<<<<<< HEAD
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "qrcode-terminal": "^0.12.0",
     "selfsigned": "^5.5.0"
+=======
+    "express": "^5.2.1"
+>>>>>>> 3cba9cc2315352bd1b8224070eeda76e311c64d9
   }
 }
